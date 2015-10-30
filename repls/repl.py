@@ -33,7 +33,7 @@ class Repl(object):
             todo.extend(cur.__subclasses__())
 
     def __init__(self, encoding, external_id=None, cmd_postfix="\n", suppress_echo=False,
-                 additional_scopes=None, apiv2=False):
+                 additional_scopes=None, apiv2=False, **kwds):
         self.id = uuid4().hex
         self._encoding = encoding
         self.decoder = getincrementaldecoder(self._encoding)()

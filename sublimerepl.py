@@ -188,7 +188,10 @@ class ReplView(object):
             self._history = MemHistory()
         self._history_match = None
 
-        self._filter_color_codes = settings.get("filter_ascii_color_codes")
+        getopt = lambda name, dflt: self._repl_launch_args.get(name, settings.get(name, dflt))
+        self._filter_color_codes = getopt("filter_ascii_color_codes", False)
+        self._filter_backspace_char = getopt("filter_backspace_char", False)
+        self._filter_backslash_newline = getopt("filter_backslash_newline", False)
 
         # optionally move view to a different group
         # find current position of this replview
@@ -319,6 +322,15 @@ class ReplView(object):
 
     def write(self, unistr):
         """Writes output from Repl into this view."""
+        # remove lines up to backslash
+        if self._filter_backspace_char:
+            lines = unistr.split('\n')
+            if '\x08' in lines[0]:
+                bol = self._view.line(self._output_end).begin()
+                self._view.run_command("repl_erase_text", {"start": bol, "end": self._output_end})
+                self._output_end = bol
+            lines = [line.split('\x08')[-1] for line in lines]
+            unistr = '\n'.join(lines)
         # remove color codes
         if self._filter_color_codes:
             unistr = re.sub(r'\033\[\d*(;\d*)?\w', '', unistr)

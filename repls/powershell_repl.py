@@ -67,7 +67,7 @@ class PowershellRepl(subprocess_repl.SubprocessRepl):
 
     def prompt(self):
         """ Sends command to get prompt """
-        self.do_write(b'Write-Host ("PS " + (gl).Path + "> ") -NoNewline\n')
+        self.do_write(self.getsetting('prompt_command', 'Write-Host ("PS " + (gl).Path + "> ") -NoNewline\n').encode())
 
     def prepend(self):
         """ Command to prepend every output with special mark to detect multiline mode """

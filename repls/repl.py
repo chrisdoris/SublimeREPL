@@ -33,7 +33,7 @@ class Repl(object):
             todo.extend(cur.__subclasses__())
 
     def __init__(self, encoding, external_id=None, cmd_postfix="\n", suppress_echo=False,
-                 additional_scopes=None, apiv2=False, **kwds):
+                 additional_scopes=None, apiv2=False, getsetting=None, **kwds):
         self.id = uuid4().hex
         self._encoding = encoding
         self.decoder = getincrementaldecoder(self._encoding)()
@@ -43,6 +43,7 @@ class Repl(object):
         self.suppress_echo = suppress_echo
         self.additional_scopes = additional_scopes or []
         self.apiv2 = apiv2
+        self.getsetting = getsetting or kwds.get
 
     def autocomplete_available(self):
         return False

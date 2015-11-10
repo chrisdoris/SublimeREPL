@@ -149,14 +149,16 @@ class PersistentHistory(MemHistory):
 
 
 class ReplView(object):
-    def __init__(self, view, repl, syntax, repl_restart_args):
+    def __init__(self, view, repl, syntax, getsetting, repl_restart_args):
         self.repl = repl
         self._view = view
         self._window = view.window()
         self._repl_launch_args = repl_restart_args
         # list of callable(repl) to handle view close events
         self.call_on_close = []
+        getsetting = getsetting or repl_restart_args.get
 
+        syntax = getsetting('syntax', syntax)
         if syntax:
             view.set_syntax_file(syntax)
         self._output_end = view.size()
@@ -165,8 +167,6 @@ class ReplView(object):
         self._repl_reader = ReplReader(repl)
         self._repl_reader.start()
 
-        settings = sublime.load_settings(SETTINGS_FILE)
-
         view.settings().set("repl_external_id", repl.external_id)
         view.settings().set("repl_id", repl.id)
         view.settings().set("repl", True)
@@ -174,24 +174,23 @@ class ReplView(object):
         if repl.allow_restarts():
             view.settings().set("repl_restart_args", repl_restart_args)
 
-        rv_settings = settings.get("repl_view_settings", {})
+        rv_settings = getsetting("repl_view_settings", {})
         for setting, value in list(rv_settings.items()):
             view.settings().set(setting, value)
 
-        view.settings().set("history_arrows", settings.get("history_arrows", True))
+        view.settings().set("history_arrows", getsetting("history_arrows", True))
 
         # for hysterical rasins ;)
-        persistent_history_enabled = settings.get("persistent_history_enabled") or settings.get("presistent_history_enabled")
+        persistent_history_enabled = getsetting("persistent_history_enabled") or getsetting("presistent_history_enabled")
         if self.external_id and persistent_history_enabled:
             self._history = PersistentHistory(self.external_id)
         else:
             self._history = MemHistory()
         self._history_match = None
 
-        getopt = lambda name, dflt: self._repl_launch_args.get(name, settings.get(name, dflt))
-        self._filter_color_codes = getopt("filter_ascii_color_codes", False)
-        self._filter_backspace_char = getopt("filter_backspace_char", False)
-        self._filter_backslash_newline = getopt("filter_backslash_newline", False)
+        self._filter_color_codes = getsetting("filter_ascii_color_codes", False)
+        self._filter_backspace_char = getsetting("filter_backspace_char", False)
+        self._filter_backslash_newline = getsetting("filter_backslash_newline", False)
 
         # optionally move view to a different group
         # find current position of this replview
@@ -202,7 +201,7 @@ class ReplView(object):
         # foreground again after moving the replview away
         oldview = self._window.views_in_group(group)[max(0, index - 1)]
 
-        target = settings.get("open_repl_in_group")
+        target = getsetting("open_repl_in_group")
 
         # either the target group is specified by index
         if isinstance(target, int):
@@ -493,10 +492,19 @@ class ReplManager(object):
             'syntax': syntax,
         }
         repl_restart_args.update(kwds)
+
+        def getsetting(name, dflt=None):
+            settings = sublime.load_settings(SETTINGS_FILE)
+            ret = dflt
+            ret = settings.get(name, ret)
+            ret = repl_restart_args.get(name, ret)
+            ret = settings.get('customize', {}).get(repl_restart_args.get('id',None), {}).get(name, ret)
+            return ret
+
         try:
             kwds = ReplManager.translate(window, kwds)
             encoding = ReplManager.translate(window, encoding)
-            r = repls.Repl.subclass(type)(encoding, **kwds)
+            r = repls.Repl.subclass(type)(encoding, getsetting=getsetting, **kwds)
             found = None
             for view in window.views():
                 if view.id() == view_id:
@@ -504,7 +512,7 @@ class ReplManager(object):
                     break
             view = found or window.new_file()
 
-            rv = ReplView(view, r, syntax, repl_restart_args)
+            rv = ReplView(view, r, syntax, getsetting, repl_restart_args)
             rv.call_on_close.append(self._delete_repl)
             self.repl_views[r.id] = rv
             view.set_scratch(True)

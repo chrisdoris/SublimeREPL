@@ -17,11 +17,12 @@
                      "id": "repl_python",
                      "mnemonic": "P",
                      "args": {
+                        "id": "repl_python",
                         "type": "subprocess",
                         "encoding": "utf8",
                         "cmd": ["python", "-i", "-u"],
                         "cwd": "$file_path",
-                        "syntax": "Packages/PythonInteractive/python-interactive.tmLanguage",
+                        "syntax": "Packages/Python/Python.tmLanguage",
                         "external_id": "python",
                         "extend_env": {"PYTHONIOENCODING": "utf-8"}
                         }
@@ -34,11 +35,12 @@
                      "id": "repl_python_pdb",
                      "mnemonic": "D",
                      "args": {
+                        "id": "repl_python_pdb",
                         "type": "subprocess",
                         "encoding": "utf8",
                         "cmd": ["python", "-i", "-u", "-m", "pdb", "$file_basename"],
                         "cwd": "$file_path",
-                        "syntax": "Packages/PythonInteractive/python-interactive.tmLanguage",
+                        "syntax": "Packages/Python/Python.tmLanguage",
                         "external_id": "python",
                         "extend_env": {"PYTHONIOENCODING": "utf-8"}
                         }
@@ -48,6 +50,7 @@
                      "id": "repl_python_run",
                      "mnemonic": "R",
                      "args": {
+                        "id": "repl_python_run",
                         "type": "subprocess",
                         "encoding": "utf8",
                         "cmd": ["python", "-u", "$file_basename"],
@@ -62,6 +65,7 @@
                      "id": "repl_python_ipython",
                      "mnemonic": "I",
                      "args": {
+                        "id": "repl_python_ipython",
                         "type": "subprocess",
                         "encoding": "utf8",
                         "autocomplete_server": true,

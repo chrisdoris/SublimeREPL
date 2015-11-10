@@ -13,6 +13,7 @@
                  "id": "repl_powershell",
                  "mnemonic": "P",
                  "args": {
+                    "id": "repl_powershell",
                     "type": "powershell",
                     "encoding": "",
                     "cmd": ["powershell", "-"],

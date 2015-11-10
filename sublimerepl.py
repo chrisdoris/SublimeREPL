@@ -330,6 +330,13 @@ class ReplView(object):
                 self._output_end = bol
             lines = [line.split('\x08')[-1] for line in lines]
             unistr = '\n'.join(lines)
+        # remove backslash followed by newline
+        if self._filter_backslash_newline:
+            if self._output_end > 0 and self._view.substr(self._output_end - 1) == '\\' and unistr[:1] == '\n':
+                self._view.run_command("repl_erase_text", {"start": self._output_end-1, "end": self._output_end})
+                self._output_end -= 1
+                unistr = unistr[1:]
+            unistr.replace('\\\n', '')
         # remove color codes
         if self._filter_color_codes:
             unistr = re.sub(r'\033\[\d*(;\d*)?\w', '', unistr)
